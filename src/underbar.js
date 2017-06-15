@@ -163,16 +163,16 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-      var startcheck = collection.length - 1 === 2;
-      _.each(collection, function(val){
-        if(startcheck){
-          accumulator = val;
-          startcheck = false;
-        }else{
-          accumulator = iterator(accumulator, val);
-        };
-      });
-      return accumulator;
+
+    if (accumulator === undefined) {
+      accumulator = collection[0];
+    }
+
+    _.each(collection, function (value) {
+      accumulator = iterator(accumulator, value);
+    });
+
+    return accumulator;
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -190,13 +190,27 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
-    // TIP: Try re-using reduce() here.
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+
+    return !!_.reduce(collection, function(allPassed, val) {
+      return allPassed && iterator(val);
+    }, true);
   };
+
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+
+    return !_.every(collection, function(value){
+      return !iterator(value);
+    });
   };
 
 
@@ -219,11 +233,27 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var obj1 = Array.prototype.slice.call(arguments, 1);
+    _.each(obj1, function(object){
+      _.each(object, function(thing, key){
+        obj[key] = thing;
+      });
+    });
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var obj1 = Array.prototype.slice.call(arguments, 1);
+    _.each(obj1, function(object){
+      _.each(object, function(thing, key){
+        if (obj[key] === undefined){
+          obj[key] = thing;
+        }
+      });
+    });
+    return obj;
   };
 
 
@@ -242,7 +272,7 @@
     // so that they'll remain available to the newly-generated function every
     // time it's called.
     var alreadyCalled = false;
-    var result;
+    var result;7
 
     // TIP: We'll return a new function that delegates to the old one, but only
     // if it hasn't been called before.
