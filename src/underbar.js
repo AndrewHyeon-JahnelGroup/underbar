@@ -164,13 +164,22 @@
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
 
-    if (accumulator === undefined) {
-      accumulator = collection[0];
-    }
+    if (accumulator === undefined){
 
-    _.each(collection, function (value) {
-      accumulator = iterator(accumulator, value);
-    });
+      accumulator = collection[0];
+
+      for (var i = 1; i < collection.length; i++){
+
+      accumulator = iterator(accumulator,collection[i]);
+
+      }
+    }else{
+
+      _.each(collection, function (value) {
+        accumulator = iterator(accumulator, value);
+      });
+
+    }
 
     return accumulator;
   };
@@ -297,8 +306,16 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var output={};
+    return function() {
+      var args = JSON.stringify(arguments);
+      if(output[args]===undefined) {
+        output[args]=func.apply(this, arguments);
+      }
+      
+      return output[args];
+    };
   };
-
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
   //
@@ -306,6 +323,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var arglist = Array.prototype.slice.call(arguments, 2);
+    setTimeout(function(){
+      func.apply(this, arglist);
+    }, wait);
   };
 
 
@@ -320,6 +341,22 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+
+    var newarray = array.slice(0);
+    var temp;
+    var randomizer;
+
+    for (var i = newarray.length; i>0; i--){
+
+      if (newarray[i] === undefined){continue;}
+
+      randomizer = Math.floor(Math.random()*i);
+      temp = newarray[i];
+      newarray[i] = newarray[randomizer];
+      newarray[randomizer] = temp;
+    }
+
+    return newarray;
   };
 
 
